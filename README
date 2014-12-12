@@ -1,0 +1,63 @@
+flask-galatea-redsysgateway
+===========================
+
+The Galatea Payment Redsys (Sermepa) module of the Flask application platform.
+
+Installing
+----------
+
+See INSTALL
+
+Support
+-------
+
+For more information or if you encounter any problems with this module,
+please redsys the programmers at
+
+  Zikzakmedia
+  --------------
+  website: http://www.zikzakmedia.com/
+  email: zikzak@zikzakmedia.com
+
+If you encounter any problems with Tryton, please don't hesitate to ask
+questions on the Tryton bug tracker, mailing list, wiki or IRC channel:
+
+  http://bugs.tryton.org/
+  http://groups.tryton.org/
+  http://wiki.tryton.org/
+  irc://irc.freenode.net/tryton
+
+License
+-------
+
+See LICENSE
+
+Copyright
+---------
+
+See COPYRIGHT
+
+
+For more information please visit the Tryton web site:
+
+  http://www.tryton.org/
+
+Redsys Form
+-----------
+
+```html
+<form id="redsys" action="{{ redsys_form['Ds_Redsys_Url'] }}" method="post" name="redsys">
+    <input type="hidden" name="Ds_Merchant_Amount" value="{{ redsys_form['Ds_Merchant_Amount'] }}" />
+    <input type="hidden" name="Ds_Merchant_Currency" value="{{ redsys_form['Ds_Merchant_Currency'] }}" />
+    <input type="hidden" name="Ds_Merchant_Order" value="{{ redsys_form['Ds_Merchant_Order'] }}" />
+    <input type="hidden" name="Ds_Merchant_MerchantCode" value="{{ redsys_form['Ds_Merchant_MerchantCode'] }}" />
+    <input type="hidden" name="Ds_Merchant_Terminal" value="{{ redsys_form['Ds_Merchant_Terminal'] }}" />
+    <input type="hidden" name="Ds_Merchant_TransactionType" value="{{ redsys_form['Ds_Merchant_TransactionType'] }}" />
+    <input type="hidden" name="Ds_Merchant_MerchantURL" value="{{ redsys_form['Ds_Merchant_MerchantURL'] }}" />
+    <input type="hidden" name="Ds_Merchant_UrlOK" value="{{ redsys_form['Ds_Merchant_UrlOK'] }}" />
+    <input type="hidden" name="Ds_Merchant_UrlKO" value="{{ redsys_form['Ds_Merchant_UrlKO'] }}" />
+    <input type="hidden" name="Ds_Merchant_MerchantSignature" value="{{ redsys_form['Ds_Merchant_MerchantSignature'] }}" />
+    <input type="hidden" name="Ds_Merchant_ConsumerLanguage" value="{{ redsys_form['Ds_Merchant_ConsumerLanguage'] }}" />
+    <input type="submit" value="{{ _('Pay') }}" class="btn btn-lg btn-success">
+</form>
+```
