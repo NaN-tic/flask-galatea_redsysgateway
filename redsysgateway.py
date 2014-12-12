@@ -62,6 +62,7 @@ def redsys_ipn(lang):
     # Search transaction
     gtransactions = GatewayTransaction.search([
         ('reference_gateway', '=', reference),
+        ('state', '=' 'draft'),
         ], limit=1)
     if gtransactions:
         gtransaction, = gtransactions
