@@ -5,6 +5,7 @@ from flask import Blueprint, request, render_template, flash, current_app, g, \
     session, abort, url_for, redirect
 from flask.ext.babel import gettext as _
 from galatea.tryton import tryton
+from galatea.csrf import csrf
 from decimal import Decimal
 from redsys import Client
 
@@ -16,6 +17,7 @@ Shop = tryton.pool.get('sale.shop')
 Sequence = tryton.pool.get('ir.sequence')
 GatewayTransaction = tryton.pool.get('account.payment.gateway.transaction')
 
+@csrf.exempt
 @redsysgateway.route('/ipn', methods=['POST'], endpoint="ipn")
 @tryton.transaction()
 def redsys_ipn(lang):
