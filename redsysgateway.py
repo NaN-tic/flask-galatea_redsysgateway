@@ -54,6 +54,11 @@ def redsys_ipn(lang):
     amount = Decimal(request.form.get('Ds_Amount'))
     authorisation_code = request.form.get('Ds_AuthorisationCode')
 
+    logs = []
+    for k, v in request.form.iteritems():
+        logs.append('%s: %s' % (k, v))
+    log = "\n".join(logs)
+
     # Search transaction
     gtransactions = GatewayTransaction.search([
         ('reference_gateway', '=', reference),
@@ -62,6 +67,7 @@ def redsys_ipn(lang):
         gtransaction, = gtransactions
         gtransaction.authorisation_code = authorisation_code
         gtransaction.amount = amount
+        gtransaction.log = log
         gtransaction.save()
     else:
         gtransaction = GatewayTransaction()
@@ -70,6 +76,7 @@ def redsys_ipn(lang):
         gtransaction.gateway = gateway
         gtransaction.reference_gateway = reference
         gtransaction.amount = amount
+        gtransaction.log = log
         gtransaction.save()
 
     # Process transaction
