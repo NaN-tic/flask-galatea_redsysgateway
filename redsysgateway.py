@@ -81,12 +81,14 @@ def redsys_ipn(lang):
         gtransaction.save()
 
     # Process transaction
-    if not int(response) < 100:
-        return 'ko'
+    # 0000 - 0099: Done
+    if int(response) < 100:
+        GatewayTransaction.confirm([gtransaction])
+        return response
 
-    # Confirm transaction 0000 to 0099
-    GatewayTransaction.confirm([gtransaction])
-    return 'ok'
+    # other transactions: cancel
+    GatewayTransaction.cancel([gtransaction])
+    return response
 
 @redsysgateway.route('/confirm', endpoint="confirm")
 @tryton.transaction()
