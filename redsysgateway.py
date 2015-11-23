@@ -6,7 +6,6 @@ from flask import Blueprint, request, render_template, flash, current_app, g, \
 from flask.ext.babel import gettext as _
 from galatea.tryton import tryton
 from galatea.csrf import csrf
-from decimal import Decimal
 from redsys import Client
 
 redsysgateway = Blueprint('redsysgateway', __name__, template_folder='templates')
@@ -49,13 +48,28 @@ def redsys_ipn(lang):
                 gateway = payment_gateway
                 break
 
-    reference = request.form.get('Ds_Order')
-    response = request.form.get('Ds_Response')
-    amount = Decimal(request.form.get('Ds_Amount'))
-    authorisation_code = request.form.get('Ds_AuthorisationCode')
+    if not gateway:
+        abort(404)
+
+    sandbox = current_app.config['DEBUG']
+    merchant_code = gateway.redsys_merchant_code
+    merchant_secret_key = gateway.redsys_secret_key
+
+    Ds_MerchantParameters = request.form['Ds_MerchantParameters']
+    Ds_Signature = request.form['Ds_Signature']
+    Ds_MerchantParameters = request.form['Ds_MerchantParameters']
+
+    redsyspayment = Client(business_code=merchant_code, secret_key=merchant_secret_key, sandbox=sandbox)
+    merchant_parameters = redsyspayment.decode_parameters(Ds_MerchantParameters)
+    valid_signature = redsyspayment.redsys_check_response(Ds_Signature, Ds_MerchantParameters)
+
+    reference = merchant_parameters.get('Ds_Order')
+    authorisation_code = merchant_parameters.get('Ds_AuthorisationCode')
+    amount = merchant_parameters.get('Ds_Amount', 0)
+    response = merchant_parameters.get('Ds_Response')
 
     logs = []
-    for k, v in request.form.iteritems():
+    for k, v in merchant_parameters.iteritems():
         logs.append('%s: %s' % (k, v))
     log = "\n".join(logs)
 
@@ -67,7 +81,7 @@ def redsys_ipn(lang):
     if gtransactions:
         gtransaction, = gtransactions
         gtransaction.authorisation_code = authorisation_code
-        gtransaction.amount = amount
+        gtransaction.amount = amount/100
         gtransaction.log = log
         gtransaction.save()
     else:
@@ -76,15 +90,15 @@ def redsys_ipn(lang):
         gtransaction.authorisation_code = authorisation_code
         gtransaction.gateway = gateway
         gtransaction.reference_gateway = reference
-        gtransaction.amount = amount
+        gtransaction.amount = amount/100
         gtransaction.log = log
         gtransaction.save()
 
-    # Process transaction
-    # 0000 - 0099: Done
-    if int(response) < 100:
-        GatewayTransaction.confirm([gtransaction])
-        return response
+    if valid_signature:
+        # Process transaction 0000 - 0099: Done
+        if int(response) < 100:
+            GatewayTransaction.confirm([gtransaction])
+            return response
 
     # other transactions: cancel
     GatewayTransaction.cancel([gtransaction])
@@ -177,8 +191,8 @@ def redsys_form(lang):
         'Ds_Merchant_Terminal': gateway.redsys_terminal,
         'Ds_Merchant_TransactionType': gateway.redsys_transaction_type,
     }
-    redsyspayment = Client(business_code=merchant_code, priv_key=merchant_secret_key, sandbox=sandbox)
-    redsys_form = redsyspayment.get_pay_form_data(values)
+    redsyspayment = Client(business_code=merchant_code, secret_key=merchant_secret_key, sandbox=sandbox)
+    redsys_form = redsyspayment.redsys_generate_request(values)
 
     session['redsys_reference'] = reference
 
