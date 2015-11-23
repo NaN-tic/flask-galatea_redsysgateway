@@ -178,19 +178,19 @@ def redsys_form(lang):
 
     # render redsys data form
     values = {
-        'Ds_Merchant_Amount': amount,
-        'Ds_Merchant_Currency': gateway.redsys_currency,
-        'Ds_Merchant_Order': redsys_reference,
-        'Ds_Merchant_ProductDescription': reference,
-        'Ds_Merchant_Titular': gateway.redsys_merchant_name,
-        'Ds_Merchant_MerchantCode': merchant_code,
-        'Ds_Merchant_MerchantURL': url_ipn,
-        'Ds_Merchant_UrlOK': url_confirm,
-        'Ds_Merchant_UrlKO': url_cancel,
-        'Ds_Merchant_MerchantName': gateway.redsys_merchant_name,
-        'Ds_Merchant_Terminal': gateway.redsys_terminal,
-        'Ds_Merchant_TransactionType': gateway.redsys_transaction_type,
-    }
+        'DS_MERCHANT_AMOUNT': amount,
+        'DS_MERCHANT_CURRENCY': gateway.redsys_currency,
+        'DS_MERCHANT_ORDER': redsys_reference,
+        'DS_MERCHANT_PRODUCTDESCRIPTION': reference,
+        'DS_MERCHANT_TITULAR': gateway.redsys_merchant_name,
+        'DS_MERCHANT_MERCHANTCODE': merchant_code,
+        'DS_MERCHANT_MERCHANTURL': url_ipn,
+        'DS_MERCHANT_URLOK': url_confirm,
+        'DS_MERCHANT_URLKO': url_cancel,
+        'DS_MERCHANT_MERCHANTNAME': gateway.redsys_merchant_name,
+        'DS_MERCHANT_TERMINAL': gateway.redsys_terminal,
+        'DS_MERCHANT_TRANSACTIONTYPE': gateway.redsys_transaction_type,
+        }
     redsyspayment = Client(business_code=merchant_code, secret_key=merchant_secret_key, sandbox=sandbox)
     redsys_form = redsyspayment.redsys_generate_request(values)
 
