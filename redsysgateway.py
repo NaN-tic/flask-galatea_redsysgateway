@@ -6,6 +6,7 @@ from flask import Blueprint, request, render_template, flash, current_app, g, \
 from flask.ext.babel import gettext as _
 from galatea.tryton import tryton
 from galatea.csrf import csrf
+from decimal import Decimal
 from redsys import Client
 
 redsysgateway = Blueprint('redsysgateway', __name__, template_folder='templates')
@@ -81,7 +82,7 @@ def redsys_ipn(lang):
     if gtransactions:
         gtransaction, = gtransactions
         gtransaction.authorisation_code = authorisation_code
-        gtransaction.amount = int(amount)/100
+        gtransaction.amount = Decimal(amount)/100
         gtransaction.log = log
         gtransaction.save()
     else:
@@ -90,7 +91,7 @@ def redsys_ipn(lang):
         gtransaction.authorisation_code = authorisation_code
         gtransaction.gateway = gateway
         gtransaction.reference_gateway = reference
-        gtransaction.amount = int(amount)/100
+        gtransaction.amount = Decimal(amount)/100
         gtransaction.log = log
         gtransaction.save()
 
