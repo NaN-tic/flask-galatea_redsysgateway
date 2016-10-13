@@ -3,7 +3,7 @@
 #the full copyright notices and license terms.
 from flask import Blueprint, request, render_template, flash, current_app, g, \
     session, abort, url_for, redirect
-from flask.ext.babel import gettext as _
+from flask_babel import gettext as _
 from galatea.tryton import tryton
 from galatea.csrf import csrf
 from decimal import Decimal
@@ -95,11 +95,12 @@ def redsys_ipn(lang):
         gtransaction.log = log
         gtransaction.save()
 
-    if valid_signature:
-        # Process transaction 0000 - 0099: Done
-        if int(response) < 100:
-            GatewayTransaction.confirm([gtransaction])
-            return response
+    # Canvi de cimbis sense verificar firma
+    # if valid_signature:
+    # Process transaction 0000 - 0099: Done
+    if int(response) < 100:
+        GatewayTransaction.confirm([gtransaction])
+        return response
 
     # other transactions: cancel
     GatewayTransaction.cancel([gtransaction])
