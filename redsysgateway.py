@@ -200,4 +200,5 @@ def redsys_form(lang):
 
     return render_template('redsys.html',
             redsys_form=redsys_form,
+            redsys_reference=redsys_reference,
             )
