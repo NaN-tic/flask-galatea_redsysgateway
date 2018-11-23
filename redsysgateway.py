@@ -95,7 +95,7 @@ def redsys_ipn(lang):
         gtransaction.log = log
         gtransaction.save()
 
-    # Canvi de cimbis sense verificar firma
+    # Sense verificar firma
     # if valid_signature:
     # Process transaction 0000 - 0099: Done
     if int(response) < 100:
@@ -162,6 +162,14 @@ def redsys_form(lang):
     currency = None
     if getattr(r, 'currency'):
         currency = getattr(r, 'currency')
+
+    # Remove old possible transactions not used
+    gtransactions = GatewayTransaction.search([
+        ('origin', '=', origin),
+        ('state', '=', 'draft'),
+        ])
+    if gtransactions:
+        GatewayTransaction.delete(gtransactions)
 
     # save transaction draft
     gtransaction = GatewayTransaction()
