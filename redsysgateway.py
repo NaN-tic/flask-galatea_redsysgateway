@@ -139,42 +139,15 @@ def redsys_form(lang):
     url_confirm = '%s%s' % (base_url, url_for('.confirm', lang=g.language))
     url_cancel = '%s%s' % (base_url, url_for('.cancel', lang=g.language))
 
-    currency = shop.currency or shop.company.currency
-    reference = request.form.get('reference')
-    origin = request.form.get('origin')
+    origin = request.form.get('origin', None)
+    record = None
     if origin:
         try:
-            o = origin.split(',')
-            r = tryton.pool.get(o[0])(o[1])
+            options = origin.split(',')
+            record = tryton.pool.get(options[0])(options[1])
         except:
             abort(500)
-        if getattr(r, 'total_amount'):
-            total_amount = getattr(r, 'total_amount')
-        else:
-            flash(_("Error when get total amount to pay. Repeat or contact us."),
-                "danger")
-            redirect(url_for('/', lang=g.language))
-        amount = total_amount - r.gateway_amount
 
-        if getattr(r, 'currency'):
-            currency = getattr(r, 'currency')
-
-    elif request.form.get('amount'):
-        try:
-            amount = Decimal(request.form.get('amount'))
-        except InvalidOperation:
-            abort(500)
-    else:
-        abort(404)
-
-    # Redsys force to use a new sequence order
-    redsys_reference = Sequence.get_id(gateway.redsys_sequence.id)
-
-    currency = None
-    if getattr(r, 'currency'):
-        currency = getattr(r, 'currency')
-
-    if origin:
         # Remove old possible transactions not used
         gtransactions = GatewayTransaction.search([
             ('origin', '=', origin),
@@ -182,6 +155,32 @@ def redsys_form(lang):
             ])
         if gtransactions:
             GatewayTransaction.delete(gtransactions)
+
+    reference = request.form.get('reference')
+    if record:
+        if getattr(record, 'total_amount'):
+            total_amount = getattr(record, 'total_amount')
+        else:
+            flash(_("Error when get total amount to pay. Repeat or contact us."),
+                "danger")
+            redirect(url_for('/', lang=g.language))
+        amount = total_amount - record.gateway_amount
+        if getattr(record, 'currency'):
+            currency = getattr(record, 'currency')
+        else:
+            currency = shop.currency
+    else:
+        currency = shop.currency
+        if request.form.get('amount'):
+            try:
+                amount = Decimal(request.form.get('amount'))
+            except InvalidOperation:
+                abort(500)
+        else:
+            abort(404)
+
+    # Redsys force to use a new sequence order
+    redsys_reference = Sequence.get_id(gateway.redsys_sequence.id)
 
     # save transaction draft
     gtransaction = GatewayTransaction()
