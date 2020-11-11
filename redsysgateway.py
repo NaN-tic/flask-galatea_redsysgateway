@@ -69,10 +69,7 @@ def redsys_ipn(lang):
     amount = merchant_parameters.get('Ds_Amount', 0)
     response = merchant_parameters.get('Ds_Response')
 
-    logs = []
-    for k, v in merchant_parameters.iteritems():
-        logs.append('%s: %s' % (k, v))
-    log = "\n".join(logs)
+    log = "\n".join([('%s: %s' % (k, v)) for k, v in merchant_parameters.items()])
 
     # Search transaction
     gtransactions = GatewayTransaction.search([
