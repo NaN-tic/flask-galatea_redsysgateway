@@ -61,6 +61,12 @@ def redsys_ipn(lang):
 
     redsyspayment = Client(business_code=merchant_code,
         secret_key=merchant_secret_key, sandbox=sandbox)
+
+    valid_signature = redsyspayment.redsys_check_response(
+        signature.encode('utf-8'), merchant_parameters.encode('utf-8'))
+    if not valid_signature:
+        abort(500)
+
     merchant_parameters = redsyspayment.decode_parameters(merchant_parameters)
 
     reference = merchant_parameters.get('Ds_Order')
@@ -68,10 +74,6 @@ def redsys_ipn(lang):
     amount = merchant_parameters.get('Ds_Amount', 0)
     response = merchant_parameters.get('Ds_Response')
 
-    valid_signature = redsyspayment.redsys_check_response(
-        signature.encode('utf-8'), merchant_parameters.encode('utf-8'))
-    if not valid_signature:
-        abort(500)
 
     log = "\n".join([('%s: %s' % (k, v)) for k, v in
             merchant_parameters.items()])
