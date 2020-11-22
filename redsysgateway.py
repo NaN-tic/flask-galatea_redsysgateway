@@ -56,26 +56,31 @@ def redsys_ipn(lang):
     merchant_code = gateway.redsys_merchant_code
     merchant_secret_key = gateway.redsys_secret_key
 
-    Ds_MerchantParameters = request.form['Ds_MerchantParameters']
-    Ds_Signature = request.form['Ds_Signature']
-    Ds_MerchantParameters = request.form['Ds_MerchantParameters']
+    merchant_parameters = request.form['Ds_MerchantParameters']
+    signature = request.form['Ds_Signature']
 
-    redsyspayment = Client(business_code=merchant_code, secret_key=merchant_secret_key, sandbox=sandbox)
-    merchant_parameters = redsyspayment.decode_parameters(Ds_MerchantParameters)
-    valid_signature = redsyspayment.redsys_check_response(Ds_Signature, Ds_MerchantParameters)
+    redsyspayment = Client(business_code=merchant_code,
+        secret_key=merchant_secret_key, sandbox=sandbox)
+    merchant_parameters = redsyspayment.decode_parameters(merchant_parameters)
 
     reference = merchant_parameters.get('Ds_Order')
     authorisation_code = merchant_parameters.get('Ds_AuthorisationCode')
     amount = merchant_parameters.get('Ds_Amount', 0)
     response = merchant_parameters.get('Ds_Response')
 
-    log = "\n".join([('%s: %s' % (k, v)) for k, v in merchant_parameters.items()])
+    valid_signature = redsyspayment.redsys_check_response(
+        signature.encode('utf-8'), merchant_parameters.encode('utf-8'))
+    if not valid_signature:
+        abort(500)
+
+    log = "\n".join([('%s: %s' % (k, v)) for k, v in
+            merchant_parameters.items()])
 
     # Search transaction
     gtransactions = GatewayTransaction.search([
-        ('reference_gateway', '=', reference),
-        ('state', '=', 'draft'),
-        ], limit=1)
+            ('reference_gateway', '=', reference),
+            ('state', '=', 'draft'),
+            ], limit=1)
     if gtransactions:
         gtransaction, = gtransactions
         gtransaction.authorisation_code = authorisation_code
@@ -92,8 +97,6 @@ def redsys_ipn(lang):
         gtransaction.log = log
         gtransaction.save()
 
-    # Sense verificar firma
-    # if valid_signature:
     # Process transaction 0000 - 0099: Done
     if int(response) < 100:
         GatewayTransaction.confirm([gtransaction])
@@ -123,11 +126,9 @@ def redsys_form(lang):
 
     gateway = None
     for payment in shop.esale_payments:
-        if payment.payment_type.gateway:
-            payment_gateway = payment.payment_type.gateway
-            if payment_gateway.method == 'redsys':
-                gateway = payment_gateway
-                break
+        if payment.payment_type.gateway.method == 'redsys':
+            gateway = payment.payment_type.gateway
+            break
 
     if not gateway:
         abort(404)
@@ -208,7 +209,8 @@ def redsys_form(lang):
         'DS_MERCHANT_TERMINAL': gateway.redsys_terminal,
         'DS_MERCHANT_TRANSACTIONTYPE': gateway.redsys_transaction_type,
         }
-    redsyspayment = Client(business_code=merchant_code, secret_key=merchant_secret_key, sandbox=sandbox)
+    redsyspayment = Client(business_code=merchant_code,
+        secret_key=merchant_secret_key, sandbox=sandbox)
     redsys_form = redsyspayment.redsys_generate_request(values)
 
     session['redsys_reference'] = reference
