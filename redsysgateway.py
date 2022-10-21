@@ -148,13 +148,13 @@ def redsys_form(lang):
         except:
             abort(500)
 
-        # Remove old possible transactions not used
+        # cancel old possible transactions not used
         gtransactions = GatewayTransaction.search([
             ('origin', '=', origin),
             ('state', '=', 'draft'),
             ])
         if gtransactions:
-            GatewayTransaction.delete(gtransactions)
+            GatewayTransaction.cancel(gtransactions)
 
     reference = request.form.get('reference')
     if record:
