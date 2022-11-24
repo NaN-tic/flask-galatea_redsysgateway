@@ -180,7 +180,7 @@ def redsys_form(lang):
             abort(404)
 
     # Redsys force to use a new sequence order
-    redsys_reference = Sequence.get_id(gateway.redsys_sequence.id)
+    redsys_reference = gateway.redsys_sequence.get()
 
     # save transaction draft
     gtransaction = GatewayTransaction()
