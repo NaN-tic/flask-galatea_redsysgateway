@@ -87,7 +87,7 @@ def redsys_ipn(lang):
         gtransaction, = gtransactions
         gtransaction.authorisation_code = authorisation_code
         gtransaction.amount = Decimal(amount)/100
-        gtransaction.log = log
+        gtransaction.gateway_log = log
         gtransaction.save()
     else:
         gtransaction = GatewayTransaction()
@@ -96,7 +96,7 @@ def redsys_ipn(lang):
         gtransaction.gateway = gateway
         gtransaction.reference_gateway = reference
         gtransaction.amount = Decimal(amount)/100
-        gtransaction.log = log
+        gtransaction.gateway_log = log
         gtransaction.save()
 
     # Process transaction 0000 - 0099: Done
