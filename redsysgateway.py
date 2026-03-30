@@ -4,20 +4,16 @@
 from flask import (Blueprint, request, render_template, flash, current_app, g,
     session, abort, url_for, redirect)
 from flask_babel import gettext as _
-from galatea.tryton import tryton
-from galatea.csrf import csrf
+from app_extensions import tryton
 from decimal import Decimal, InvalidOperation
 from redsys import Client
 
 redsysgateway = Blueprint('redsysgateway', __name__, template_folder='templates')
 
-SHOP = current_app.config.get('TRYTON_SALE_SHOP')
+def _shop_id():
+    return current_app.config.get('TRYTON_SALE_SHOP')
 
-Shop = tryton.pool.get('sale.shop')
-Sequence = tryton.pool.get('ir.sequence')
-GatewayTransaction = tryton.pool.get('account.payment.gateway.transaction')
 
-@csrf.exempt
 @redsysgateway.route('/ipn', methods=['POST'], endpoint="ipn")
 @tryton.transaction()
 def redsys_ipn(lang):
@@ -39,7 +35,10 @@ def redsys_ipn(lang):
      Ds_Currency
      Ds_Hour
     """
-    shop = Shop(SHOP)
+    Shop = tryton.pool.get('sale.shop')
+    GatewayTransaction = tryton.pool.get('account.payment.gateway.transaction')
+
+    shop = Shop(_shop_id())
 
     gateway = None
     for payment in shop.esale_payments:
@@ -121,7 +120,10 @@ def redsys_cancel(lang):
 @redsysgateway.route('/', methods=['POST'], endpoint="redsys")
 @tryton.transaction()
 def redsys_form(lang):
-    shop = Shop(SHOP)
+    Shop = tryton.pool.get('sale.shop')
+    GatewayTransaction = tryton.pool.get('account.payment.gateway.transaction')
+
+    shop = Shop(_shop_id())
 
     base_url = current_app.config['BASE_URL']
     sandbox = current_app.config['DEBUG']
